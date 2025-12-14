@@ -1,124 +1,54 @@
-body {
-    margin: 0;
-    padding: 0;
-    background-color: #000;
-    color: #0f0;
-    font-family: 'Courier New', monospace;
-    overflow: hidden;
-    height: 100vh;
-}
+body { margin: 0; background: #000; color: #fff; font-family: 'Orbitron', sans-serif; overflow: hidden; height: 100vh; user-select: none; }
 
-.controls {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 100;
-}
+/* LAYOUT */
+.container { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+.mode-container { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: center; align-items: center; }
+.mode-container.active { display: flex; }
 
-select {
-    background: #000;
-    color: #0f0;
-    border: 1px solid #0f0;
-    padding: 5px;
-    font-family: 'Courier New', monospace;
-}
+/* HUD */
+.hud-top { position: absolute; top: 20px; width: 100%; text-align: center; font-size: 1.5rem; letter-spacing: 3px; color: red; text-shadow: 0 0 10px red; z-index: 10; }
+.controls { position: absolute; bottom: 30px; display: flex; flex-direction: column; align-items: center; gap: 10px; z-index: 20; width: 100%; }
+.mode-btns { display: flex; gap: 10px; }
+.btn { background: #222; border: 1px solid #555; color: #fff; padding: 10px 15px; font-family: 'Orbitron'; cursor: pointer; }
+.btn-cam { background: #500; border: 1px solid red; color: #fff; padding: 5px 20px; margin-bottom: 5px; cursor: pointer; }
 
-.container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+/* MUGSHOT POPUP (INTRUDER FACE) */
+.mugshot-box {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+    width: 300px; height: 400px;
+    border: 3px solid red; background: rgba(0,0,0,0.9);
+    z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 0 50px red; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+.mugshot-box.visible { transform: translate(-50%, -50%) scale(1); }
+#intruder-photo { width: 90%; border: 1px solid #fff; filter: grayscale(100%) contrast(1.2); }
+.mugshot-text { color: red; margin-top: 10px; font-size: 1.2rem; animation: blink 0.5s infinite; }
 
-.mode-container {
-    display: none; /* Hide all by default */
-    width: 100%;
-    height: 100%;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
+/* ALARM FLASHING */
+.overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: red; opacity: 0; pointer-events: none; z-index: 100; transition: opacity 0.1s; }
+.flash-bang { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; pointer-events: none; z-index: 101; }
 
-.mode-container.active {
-    display: flex;
-}
+/* ANIMATIONS */
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-/* --- MODE 1: SENTRY --- */
-.eye-socket {
-    width: 150px;
-    height: 150px;
-    border: 2px solid #0f0;
-    border-radius: 50%;
-    position: relative;
-    box-shadow: 0 0 20px #0f0;
-    background: radial-gradient(circle, #003300 0%, #000 70%);
+/* --- MODE 1: BURNING EYES --- */
+.eyes-wrapper { display: flex; gap: 30px; }
+.eye-socket { 
+    width: 100px; height: 100px; 
+    border-radius: 50% 0 50% 50%; transform: rotate(45deg); position: relative; overflow: hidden;
+    background: #000; box-shadow: 0 0 20px orangered, inset 0 0 20px orange; border: 2px solid orange;
 }
-.eye-ball {
-    width: 60px;
-    height: 60px;
-    background: #fff;
-    border-radius: 50%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    transition: all 0.1s ease-out;
+.eye-socket.fire { animation: burn 0.1s infinite alternate; }
+.iris { 
+    width: 40px; height: 40px; background: #fff; border-radius: 50%; 
+    position: absolute; top: 30px; left: 30px; box-shadow: 0 0 15px yellow;
 }
-.pupil { width: 20px; height: 20px; background: #000; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.pupil { width: 15px; height: 15px; background: #000; border-radius: 50%; position: absolute; top: 12px; left: 12px; }
+@keyframes burn { 0% { box-shadow: 0 0 20px orangered, inset 0 0 20px orange; } 100% { box-shadow: 0 0 35px red, inset 0 0 30px yellow; } }
 
-/* --- MODE 2: MATRIX --- */
-canvas { display: block; }
+/* --- MODE 2: THUNDER --- */
+.thunder-icon { font-size: 100px; color: #aaa; filter: drop-shadow(0 0 20px #fff); }
 
-/* --- MODE 3: RADAR --- */
-.radar-circle {
-    width: 250px;
-    height: 250px;
-    border: 2px solid #004400;
-    border-radius: 50%;
-    position: relative;
-    background: repeating-radial-gradient(#001100 0%, #001100 10%, #002200 11%);
-}
-.radar-line {
-    position: absolute;
-    width: 250px;
-    height: 250px;
-    border-radius: 50%;
-    background: conic-gradient(from 0deg, transparent 0deg, rgba(0, 255, 0, 0.4) 30deg, transparent 31deg);
-    animation: rotate 3s linear infinite;
-}
-
-/* --- SHARED --- */
-.status-text {
-    position: absolute;
-    bottom: 50px;
-    font-size: 1.5rem;
-    letter-spacing: 5px;
-    animation: blink 2s infinite;
-    z-index: 50;
-    text-align: center;
-    width: 100%;
-}
-.scan-line {
-    position: absolute;
-    width: 100%;
-    height: 2px;
-    background: rgba(0, 255, 0, 0.5);
-    top: 0;
-    animation: scan 4s linear infinite;
-    pointer-events: none;
-    z-index: 5;
-}
-.overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: red; opacity: 0; pointer-events: none; z-index: 200; transition: opacity 0.2s;
-}
-
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-@keyframes scan { 0% { top: 0%; } 100% { top: 100%; } }
-@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-body.breach .status-text { color: red; font-weight: bold; }
+/* --- MODE 3: SNIPER --- */
+.target-scope { width: 300px; height: 300px; border: 2px solid #0f0; border-radius: 50%; position: absolute; }
+.crosshair { width: 20px; height: 20px; background: red; border-radius: 50%; }

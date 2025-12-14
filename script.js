@@ -1,94 +1,136 @@
-// --- SETUP ---
-const eye = document.getElementById('eye');
+const eyes = document.querySelectorAll('.iris');
 const statusText = document.getElementById('status');
 const overlay = document.getElementById('overlay');
-const modeSelect = document.getElementById('modeSelect');
+const flashbang = document.getElementById('flashbang');
+const mugshotBox = document.getElementById('mugshot-container');
+const intruderPhoto = document.getElementById('intruder-photo');
+
+// CAMERA
+const video = document.getElementById('camera-feed');
+const canvas = document.getElementById('camera-sensor');
+let cameraActive = false;
+
+let currentMode = 'eyes';
 let isBreach = false;
 
-// --- MODE SWITCHER ---
-function changeMode() {
-    const mode = modeSelect.value;
-    
-    // Hide all
-    document.querySelectorAll('.mode-container').forEach(el => el.classList.remove('active'));
-    
-    // Show selected
-    document.getElementById('mode-' + mode).classList.add('active');
-    
-    statusText.innerText = "SYSTEM ARMED: " + mode.toUpperCase();
-}
+// SOUNDS
+const sounds = {
+    eyes: document.getElementById('sound-siren'),
+    thunder: document.getElementById('sound-thunder'),
+    gun: document.getElementById('sound-gun'),
+    shutter: document.getElementById('sound-shutter')
+};
 
-// --- MODE 1: GYROSCOPE (Sentry) ---
-window.addEventListener('deviceorientation', (event) => {
-    if (modeSelect.value !== 'sentry') return;
-    const x = Math.min(Math.max(event.gamma, -40), 40);
-    const y = Math.min(Math.max(event.beta - 45, -40), 40);
-    eye.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
-});
-
-// --- MODE 2: MATRIX CODE ---
-const canvas = document.getElementById('matrixCanvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヂギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレゲゼデベペオォコソトノホモヨョロヲゴゾドボポ1234567890';
-const fontSize = 16;
-const columns = canvas.width / fontSize;
-const drops = Array(Math.floor(columns)).fill(1);
-
-function drawMatrix() {
-    if (modeSelect.value !== 'matrix') return; // Save battery if not in matrix mode
-
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#0F0';
-    ctx.font = fontSize + 'px monospace';
-
-    for (let i = 0; i < drops.length; i++) {
-        const text = katakana.charAt(Math.floor(Math.random() * katakana.length));
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-            drops[i] = 0;
-        }
-        drops[i]++;
+// 1. ACTIVATE CAMERA
+window.enableCamera = async function() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+        video.srcObject = stream;
+        video.play();
+        cameraActive = true;
+        document.querySelector('.btn-cam').innerText = "CAMERA ARMED ✅";
+        document.querySelector('.btn-cam').style.background = "green";
+    } catch (err) {
+        alert("Camera permission denied!");
     }
 }
-setInterval(drawMatrix, 30);
 
-// --- SECURITY LOGIC (Shared) ---
-document.body.addEventListener('click', function() {
-    // Request permission for sensors
+// 2. MODE SWITCHER & AUDIO UNLOCKER (The Fix)
+window.setMode = function(mode) {
+    currentMode = mode;
+    
+    // UI Updates
+    document.querySelectorAll('.mode-container').forEach(el => el.classList.remove('active'));
+    document.getElementById('mode-' + mode).classList.add('active');
+    statusText.innerText = "SYSTEM ARMED: " + mode.toUpperCase();
+    statusText.style.color = "white";
+
+    // --- THE AUDIO FIX ---
+    // We play the sound for 0.01 seconds and pause it.
+    // This tells the browser: "The user allowed this sound!"
+    const s = sounds[mode];
+    if(s) {
+        s.muted = true; // Mute so we don't hear it yet
+        s.play().then(() => {
+            s.pause();
+            s.currentTime = 0;
+            s.muted = false; // Unmute for later
+        }).catch(e => console.log("Audio waiting for interaction"));
+    }
+}
+
+// 3. GYROSCOPE
+window.addEventListener('deviceorientation', (e) => {
+    if (isBreach) return;
+    const x = Math.min(Math.max(e.gamma, -40), 40); 
+    const y = Math.min(Math.max(e.beta - 45, -40), 40);
+    eyes.forEach(eye => { eye.style.transform = `translate(${x}px, ${y}px)`; });
+});
+
+// 4. TRIGGER TRAP
+document.body.addEventListener('click', function(e) {
+    if (e.target.tagName === 'BUTTON') return;
+
     if (typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission();
     }
-    
-    if (modeSelect.value === 'sentry') {
-        triggerAlarm();
+
+    if (!isBreach) {
+        startAlarm();
     }
 });
 
-function triggerAlarm() {
+function startAlarm() {
     isBreach = true;
-    document.body.classList.add('breach');
-    statusText.innerText = "UNAUTHORIZED ACCESS!";
-    
-    let flashCount = 0;
-    const flashInterval = setInterval(() => {
-        overlay.style.opacity = overlay.style.opacity === '0' ? '0.5' : '0';
-        flashCount++;
-        if(flashCount > 10) {
-            clearInterval(flashInterval);
-            resetSystem();
-        }
-    }, 200);
+    statusText.innerText = "INTRUDER DETECTED!";
+    statusText.style.color = "red";
 
-    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    // A. CAPTURE PHOTO
+    if (cameraActive) takeMugshot();
+
+    // B. PLAY SOUND (Now guaranteed to work)
+    const sound = sounds[currentMode];
+    if (sound) {
+        sound.currentTime = 0; 
+        sound.volume = 1.0;
+        sound.play().catch(e => console.log("Browser blocked audio"));
+    }
+
+    // C. VIBRATE
+    if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 1000]);
+
+    // D. VISUALS
+    if (currentMode === 'thunder') {
+        let flashes = 0;
+        const interval = setInterval(() => {
+            flashbang.style.opacity = '1';
+            setTimeout(() => { flashbang.style.opacity = '0'; }, 50);
+            flashes++;
+            if (flashes >= 5) clearInterval(interval);
+        }, 300);
+    } 
+    else {
+        overlay.style.animation = "burn 0.2s infinite";
+        overlay.style.opacity = '0.5';
+    }
+
+    setTimeout(resetSystem, 6000);
+}
+
+function takeMugshot() {
+    sounds.shutter.play();
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    intruderPhoto.src = canvas.toDataURL("image/png");
+    mugshotBox.classList.add('visible');
 }
 
 function resetSystem() {
     isBreach = false;
-    document.body.classList.remove('breach');
+    statusText.innerText = "SYSTEM RE-ARMED";
+    statusText.style.color = "white";
     overlay.style.opacity = '0';
-    changeMode(); // Reset text
+    overlay.style.animation = "none";
+    mugshotBox.classList.remove('visible');
 }

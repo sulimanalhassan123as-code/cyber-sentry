@@ -3,46 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SecuOS v2.0</title>
+    <title>SECURITY SYSTEM ULTIMATE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="overlay" id="overlay"></div>
-    
-    <!-- MODE SWITCHER UI -->
-    <div class="controls">
-        <select id="modeSelect" onchange="changeMode()">
-            <option value="sentry">MODE: SENTRY EYE</option>
-            <option value="matrix">MODE: MATRIX DATA</option>
-            <option value="radar">MODE: SONAR RADAR</option>
-        </select>
+    <div class="flash-bang" id="flashbang"></div>
+
+    <!-- CAMERA SYSTEM (Hidden) -->
+    <video id="camera-feed" autoplay playsinline style="display:none;"></video>
+    <canvas id="camera-sensor" style="display:none;"></canvas>
+
+    <!-- CAPTURED PHOTO POPUP -->
+    <div id="mugshot-container" class="mugshot-box">
+        <div class="scan-line"></div>
+        <img id="intruder-photo" src="" alt="Intruder">
+        <div class="mugshot-text">INTRUDER IDENTIFIED</div>
+    </div>
+
+    <!-- HUD -->
+    <div class="hud-top">
+        <div id="status">SYSTEM ARMED</div>
     </div>
 
     <div class="container">
-        <div class="status-text" id="status">SYSTEM ARMED</div>
-
-        <!-- WALLPAPER 1: THE EYE -->
-        <div id="mode-sentry" class="mode-container active">
-            <div class="eye-socket">
-                <div class="eye-ball" id="eye">
-                    <div class="pupil"></div>
+        <!-- MODE 1: BURNING EYES (SENTRY) -->
+        <div id="mode-eyes" class="mode-container active">
+            <div class="eyes-wrapper">
+                <div class="eye-socket fire">
+                    <div class="iris"><div class="pupil"></div></div>
+                </div>
+                <div class="eye-socket fire">
+                    <div class="iris"><div class="pupil"></div></div>
                 </div>
             </div>
         </div>
 
-        <!-- WALLPAPER 2: MATRIX RAIN -->
-        <div id="mode-matrix" class="mode-container">
-            <canvas id="matrixCanvas"></canvas>
+        <!-- MODE 2: THUNDER STORM -->
+        <div id="mode-thunder" class="mode-container">
+            <div class="thunder-icon">⚡</div>
         </div>
 
-        <!-- WALLPAPER 3: RADAR -->
-        <div id="mode-radar" class="mode-container">
-            <div class="radar-circle"></div>
-            <div class="radar-line"></div>
+        <!-- MODE 3: GUNNER TARGET -->
+        <div id="mode-gun" class="mode-container">
+            <div class="target-scope"></div>
+            <div class="crosshair"></div>
         </div>
-
-        <div class="scan-line"></div>
     </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+        <button onclick="enableCamera()" class="btn-cam">🔴 ACTIVATE CAMERA</button>
+        <div class="mode-btns">
+            <button onclick="setMode('eyes')" class="btn">👀 DEMON</button>
+            <button onclick="setMode('thunder')" class="btn">⚡ STORM</button>
+            <button onclick="setMode('gun')" class="btn">🔫 SNIPER</button>
+        </div>
+    </div>
+
+    <!-- AUDIO BANK -->
+    <audio id="sound-siren" src="https://assets.mixkit.co/sfx/preview/mixkit-police-siren-1641.mp3"></audio>
+    <audio id="sound-thunder" src="https://assets.mixkit.co/sfx/preview/mixkit-thunder-rumble-1297.mp3"></audio>
+    <audio id="sound-gun" src="https://assets.mixkit.co/sfx/preview/mixkit-machine-gun-burst-1674.mp3"></audio>
+    <audio id="sound-shutter" src="https://assets.mixkit.co/sfx/preview/mixkit-camera-shutter-click-1133.mp3"></audio>
 
     <script src="script.js"></script>
 </body>
