@@ -1,0 +1,124 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #000;
+    color: #0f0;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+    height: 100vh;
+}
+
+.controls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 100;
+}
+
+select {
+    background: #000;
+    color: #0f0;
+    border: 1px solid #0f0;
+    padding: 5px;
+    font-family: 'Courier New', monospace;
+}
+
+.container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.mode-container {
+    display: none; /* Hide all by default */
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.mode-container.active {
+    display: flex;
+}
+
+/* --- MODE 1: SENTRY --- */
+.eye-socket {
+    width: 150px;
+    height: 150px;
+    border: 2px solid #0f0;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 20px #0f0;
+    background: radial-gradient(circle, #003300 0%, #000 70%);
+}
+.eye-ball {
+    width: 60px;
+    height: 60px;
+    background: #fff;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.1s ease-out;
+}
+.pupil { width: 20px; height: 20px; background: #000; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+/* --- MODE 2: MATRIX --- */
+canvas { display: block; }
+
+/* --- MODE 3: RADAR --- */
+.radar-circle {
+    width: 250px;
+    height: 250px;
+    border: 2px solid #004400;
+    border-radius: 50%;
+    position: relative;
+    background: repeating-radial-gradient(#001100 0%, #001100 10%, #002200 11%);
+}
+.radar-line {
+    position: absolute;
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent 0deg, rgba(0, 255, 0, 0.4) 30deg, transparent 31deg);
+    animation: rotate 3s linear infinite;
+}
+
+/* --- SHARED --- */
+.status-text {
+    position: absolute;
+    bottom: 50px;
+    font-size: 1.5rem;
+    letter-spacing: 5px;
+    animation: blink 2s infinite;
+    z-index: 50;
+    text-align: center;
+    width: 100%;
+}
+.scan-line {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: rgba(0, 255, 0, 0.5);
+    top: 0;
+    animation: scan 4s linear infinite;
+    pointer-events: none;
+    z-index: 5;
+}
+.overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: red; opacity: 0; pointer-events: none; z-index: 200; transition: opacity 0.2s;
+}
+
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes scan { 0% { top: 0%; } 100% { top: 100%; } }
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+body.breach .status-text { color: red; font-weight: bold; }

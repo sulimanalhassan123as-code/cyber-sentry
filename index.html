@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SecuOS v2.0</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- MODE SWITCHER UI -->
+    <div class="controls">
+        <select id="modeSelect" onchange="changeMode()">
+            <option value="sentry">MODE: SENTRY EYE</option>
+            <option value="matrix">MODE: MATRIX DATA</option>
+            <option value="radar">MODE: SONAR RADAR</option>
+        </select>
+    </div>
+
+    <div class="container">
+        <div class="status-text" id="status">SYSTEM ARMED</div>
+
+        <!-- WALLPAPER 1: THE EYE -->
+        <div id="mode-sentry" class="mode-container active">
+            <div class="eye-socket">
+                <div class="eye-ball" id="eye">
+                    <div class="pupil"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WALLPAPER 2: MATRIX RAIN -->
+        <div id="mode-matrix" class="mode-container">
+            <canvas id="matrixCanvas"></canvas>
+        </div>
+
+        <!-- WALLPAPER 3: RADAR -->
+        <div id="mode-radar" class="mode-container">
+            <div class="radar-circle"></div>
+            <div class="radar-line"></div>
+        </div>
+
+        <div class="scan-line"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
