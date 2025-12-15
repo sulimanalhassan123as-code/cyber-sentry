@@ -3,71 +3,307 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SECURITY SYSTEM ULTIMATE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <title>NEVER HIDE OS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --primary: #00ff41; --bg: #050505; --glass: rgba(0, 40, 0, 0.7); }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--primary);
+            font-family: 'Share Tech Mono', monospace;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* MATRIX BG */
+        canvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.15; }
+
+        /* HEADER */
+        .top-bar {
+            padding: 15px;
+            border-bottom: 1px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+        }
+        .brand { font-family: 'Orbitron', sans-serif; font-size: 1.2rem; letter-spacing: 2px; }
+        .status { animation: blink 2s infinite; }
+
+        /* MAIN DASHBOARD */
+        .screen {
+            flex: 1;
+            padding: 20px;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .screen.active { display: flex; }
+
+        /* GRID MENU (HOME) */
+        .app-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 50px;
+        }
+        .app-card {
+            background: var(--glass);
+            border: 1px solid var(--primary);
+            padding: 30px 10px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.1);
+        }
+        .app-card:active { transform: scale(0.95); background: var(--primary); color: #000; }
+        .icon { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+        .label { font-size: 1rem; font-weight: bold; }
+
+        /* CHAT INTERFACE */
+        .chat-box {
+            flex: 1;
+            border: 1px solid var(--primary);
+            background: rgba(0,0,0,0.5);
+            margin-bottom: 15px;
+            padding: 15px;
+            overflow-y: auto;
+            border-radius: 5px;
+        }
+        .msg { margin-bottom: 15px; line-height: 1.4; }
+        .msg.system { color: var(--primary); text-shadow: 0 0 5px var(--primary); }
+        .msg.user { color: #fff; text-align: right; border-right: 2px solid #fff; padding-right: 10px; }
+        
+        .input-area { display: flex; gap: 10px; }
+        input {
+            flex: 1;
+            background: #000;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 10px;
+            font-family: inherit;
+        }
+        button.send-btn {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* NAVIGATION */
+        .nav-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px;
+            background: #000;
+            border-top: 1px solid var(--primary);
+        }
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #555;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .nav-btn.active { color: var(--primary); text-shadow: 0 0 10px var(--primary); }
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
 </head>
 <body>
-    <div class="overlay" id="overlay"></div>
-    <div class="flash-bang" id="flashbang"></div>
+    <canvas id="matrix"></canvas>
 
-    <!-- CAMERA SYSTEM (Hidden) -->
-    <video id="camera-feed" autoplay playsinline style="display:none;"></video>
-    <canvas id="camera-sensor" style="display:none;"></canvas>
-
-    <!-- CAPTURED PHOTO POPUP -->
-    <div id="mugshot-container" class="mugshot-box">
-        <div class="scan-line"></div>
-        <img id="intruder-photo" src="" alt="Intruder">
-        <div class="mugshot-text">INTRUDER IDENTIFIED</div>
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <div class="brand">NEVER HIDE OS</div>
+        <div class="status">ONLINE</div>
     </div>
 
-    <!-- HUD -->
-    <div class="hud-top">
-        <div id="status">SYSTEM ARMED</div>
-    </div>
-
-    <div class="container">
-        <!-- MODE 1: BURNING EYES (SENTRY) -->
-        <div id="mode-eyes" class="mode-container active">
-            <div class="eyes-wrapper">
-                <div class="eye-socket fire">
-                    <div class="iris"><div class="pupil"></div></div>
-                </div>
-                <div class="eye-socket fire">
-                    <div class="iris"><div class="pupil"></div></div>
-                </div>
+    <!-- 1. HOME SCREEN -->
+    <div id="screen-home" class="screen active">
+        <div style="text-align: center; margin-top: 20px;">
+            <h1 style="font-family: 'Orbitron'; font-size: 2rem;">SYSTEM READY</h1>
+            <p>SELECT MODULE</p>
+        </div>
+        <div class="app-grid">
+            <div class="app-card" onclick="switchScreen('story')">
+                <span class="icon">🧬</span>
+                <span class="label">ORIGIN STORY</span>
+            </div>
+            <div class="app-card" onclick="switchScreen('ai')">
+                <span class="icon">🧠</span>
+                <span class="label">GENERAL AI</span>
+            </div>
+            <div class="app-card" onclick="window.open('https://wa.me/233248503631')">
+                <span class="icon">📞</span>
+                <span class="label">CONTACT</span>
+            </div>
+            <div class="app-card" onclick="window.location.href='surprise.html'">
+                <span class="icon">🤖</span>
+                <span class="label">ROBOT MODE</span>
             </div>
         </div>
+    </div>
 
-        <!-- MODE 2: THUNDER STORM -->
-        <div id="mode-thunder" class="mode-container">
-            <div class="thunder-icon">⚡</div>
+    <!-- 2. ORIGIN STORY AI -->
+    <div id="screen-story" class="screen">
+        <div class="chat-box" id="story-chat">
+            <div class="msg system">NEVER HIDE ORIGIN v1.0 INITIALIZED.<br>Ask me: "Who created you?" or "Tell me the struggle".</div>
         </div>
-
-        <!-- MODE 3: GUNNER TARGET -->
-        <div id="mode-gun" class="mode-container">
-            <div class="target-scope"></div>
-            <div class="crosshair"></div>
+        <div class="input-area">
+            <input type="text" id="story-input" placeholder="Ask about the journey...">
+            <button class="send-btn" onclick="askStory()">SEND</button>
         </div>
     </div>
 
-    <!-- CONTROLS -->
-    <div class="controls">
-        <button onclick="enableCamera()" class="btn-cam">🔴 ACTIVATE CAMERA</button>
-        <div class="mode-btns">
-            <button onclick="setMode('eyes')" class="btn">👀 DEMON</button>
-            <button onclick="setMode('thunder')" class="btn">⚡ STORM</button>
-            <button onclick="setMode('gun')" class="btn">🔫 SNIPER</button>
+    <!-- 3. GENERAL AI (Connected) -->
+    <div id="screen-ai" class="screen">
+        <div class="chat-box" id="ai-chat">
+            <div class="msg system">GENERAL INTELLIGENCE MODULE.<br>Connected to DeepSeek Neural Net.<br>Ask me anything.</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="ai-input" placeholder="Ask anything...">
+            <button class="send-btn" onclick="askAI()">SEND</button>
         </div>
     </div>
 
-    <!-- AUDIO BANK -->
-    <audio id="sound-siren" src="https://assets.mixkit.co/sfx/preview/mixkit-police-siren-1641.mp3"></audio>
-    <audio id="sound-thunder" src="https://assets.mixkit.co/sfx/preview/mixkit-thunder-rumble-1297.mp3"></audio>
-    <audio id="sound-gun" src="https://assets.mixkit.co/sfx/preview/mixkit-machine-gun-burst-1674.mp3"></audio>
-    <audio id="sound-shutter" src="https://assets.mixkit.co/sfx/preview/mixkit-camera-shutter-click-1133.mp3"></audio>
+    <!-- BOTTOM NAV -->
+    <div class="nav-bar">
+        <button class="nav-btn active" onclick="switchScreen('home')">🏠</button>
+        <button class="nav-btn" onclick="switchScreen('story')">🧬</button>
+        <button class="nav-btn" onclick="switchScreen('ai')">🧠</button>
+    </div>
 
-    <script src="script.js"></script>
+    <script>
+        // --- MATRIX EFFECT ---
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const chars = "01NEVERHIDE";
+        const drops = Array(Math.floor(canvas.width/14)).fill(1);
+        setInterval(() => {
+            ctx.fillStyle = "rgba(0,0,0,0.05)"; ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = "#0f0"; ctx.font = "14px monospace";
+            drops.forEach((y, i) => {
+                ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*14, y*14);
+                if(y*14 > canvas.height && Math.random() > 0.98) drops[i] = 0;
+                drops[i]++;
+            });
+        }, 50);
+
+        // --- NAVIGATION ---
+        function switchScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + id).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            if(id === 'home') document.querySelectorAll('.nav-btn')[0].classList.add('active');
+            if(id === 'story') document.querySelectorAll('.nav-btn')[1].classList.add('active');
+            if(id === 'ai') document.querySelectorAll('.nav-btn')[2].classList.add('active');
+        }
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.pitch = 0.6; u.rate = 0.9;
+            window.speechSynthesis.speak(u);
+        }
+
+        // --- ORIGIN STORY LOGIC ---
+        const storyData = {
+            "who": "I was created by a mind that refused to accept limitations. A developer who held a vision when his hands held nothing but a broken device.",
+            "struggle": "The path was dark. Formal education was denied. The streets were the classroom. There were nights of coding on low battery, eyes burning. But the 'Quit' button was never pressed.",
+            "education": "I am not a product of a university. I am a product of hunger. I learned from documentation, from trial, from failure. This system is proof that degrees do not write code. Logic does.",
+            "advice": "If I can build this from nothing, you have no excuse. The world belongs to those who build it. Never Hide your potential.",
+            "never hide": "Never Hide is not just a brand. It is a command. Do not hide your talent because you lack their papers. Show them your code.",
+            "default": "Accessing Memory Banks... Ask me about 'The Struggle', 'Education', or 'The Creator'."
+        };
+
+        function askStory() {
+            const input = document.getElementById('story-input');
+            const chat = document.getElementById('story-chat');
+            const text = input.value.toLowerCase();
+            if(!text) return;
+
+            chat.innerHTML += `<div class="msg user">${input.value}</div>`;
+            input.value = '';
+
+            let response = storyData.default;
+            if(text.includes('who') || text.includes('creator')) response = storyData.who;
+            else if(text.includes('hard') || text.includes('struggle')) response = storyData.struggle;
+            else if(text.includes('school') || text.includes('education')) response = storyData.education;
+            else if(text.includes('advice') || text.includes('motivation')) response = storyData.advice;
+            else if(text.includes('never hide')) response = storyData["never hide"];
+
+            setTimeout(() => {
+                chat.innerHTML += `<div class="msg system">${response}</div>`;
+                speak(response);
+                chat.scrollTop = chat.scrollHeight;
+            }, 500);
+        }
+
+        // --- GENERAL AI LOGIC (DEEPSEEK CONNECTED) ---
+        async function askAI() {
+            const input = document.getElementById('ai-input');
+            const chat = document.getElementById('ai-chat');
+            const text = input.value;
+            if(!text) return;
+
+            // 1. Show User Message
+            chat.innerHTML += `<div class="msg user">${text}</div>`;
+            input.value = '';
+            
+            // 2. Show "Thinking..."
+            const loadingId = "load_" + Date.now();
+            chat.innerHTML += `<div class="msg system" id="${loadingId}">Connecting to Neural Net...</div>`;
+            chat.scrollTop = chat.scrollHeight;
+
+            // 3. YOUR API KEY (Embedded)
+            const apiKey = "sk-0a03486a61eb416c8e6ba453cbae4077"; 
+            
+            try {
+                // Call DeepSeek API
+                const response = await fetch("https://api.deepseek.com/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: "deepseek-chat",
+                        messages: [
+                            {"role": "system", "content": "You are 'Never Hide AI', a robotic assistant created by a self-taught developer. You are helpful, logical, and speak in a slightly robotic tone."},
+                            {"role": "user", "content": text}
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Get the AI reply
+                let aiText = "Connection Failed.";
+                if(data.choices && data.choices[0]) {
+                    aiText = data.choices[0].message.content;
+                } else if(data.error) {
+                    aiText = "Error: " + data.error.message;
+                }
+
+                // Update the chat
+                document.getElementById(loadingId).innerText = aiText;
+                speak(aiText); // Read it out loud
+                chat.scrollTop = chat.scrollHeight;
+
+            } catch (error) {
+                document.getElementById(loadingId).innerText = "System Error: Check Internet Connection.";
+                console.error(error);
+            }
+        }
+    </script>
 </body>
 </html>
