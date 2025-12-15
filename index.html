@@ -248,28 +248,28 @@
             }, 500);
         }
 
-        // --- GENERAL AI LOGIC (DEEPSEEK CONNECTED) ---
+        // --- GENERAL AI LOGIC (FIXED WITH PROXY) ---
         async function askAI() {
             const input = document.getElementById('ai-input');
             const chat = document.getElementById('ai-chat');
             const text = input.value;
             if(!text) return;
 
-            // 1. Show User Message
             chat.innerHTML += `<div class="msg user">${text}</div>`;
             input.value = '';
             
-            // 2. Show "Thinking..."
             const loadingId = "load_" + Date.now();
-            chat.innerHTML += `<div class="msg system" id="${loadingId}">Connecting to Neural Net...</div>`;
+            chat.innerHTML += `<div class="msg system" id="${loadingId}">Thinking...</div>`;
             chat.scrollTop = chat.scrollHeight;
 
-            // 3. YOUR API KEY (Embedded)
             const apiKey = "sk-0a03486a61eb416c8e6ba453cbae4077"; 
             
+            // We use a CORS Proxy to bypass the browser block
+            const proxy = "https://corsproxy.io/?";
+            const targetUrl = "https://api.deepseek.com/chat/completions";
+
             try {
-                // Call DeepSeek API
-                const response = await fetch("https://api.deepseek.com/chat/completions", {
+                const response = await fetch(proxy + targetUrl, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -278,30 +278,25 @@
                     body: JSON.stringify({
                         model: "deepseek-chat",
                         messages: [
-                            {"role": "system", "content": "You are 'Never Hide AI', a robotic assistant created by a self-taught developer. You are helpful, logical, and speak in a slightly robotic tone."},
+                            {"role": "system", "content": "You are 'Never Hide AI', a robotic assistant created by a self-taught developer. Be concise and logical."},
                             {"role": "user", "content": text}
                         ]
                     })
                 });
 
-                const data = await response.json();
-                
-                // Get the AI reply
-                let aiText = "Connection Failed.";
-                if(data.choices && data.choices[0]) {
-                    aiText = data.choices[0].message.content;
-                } else if(data.error) {
-                    aiText = "Error: " + data.error.message;
+                if (!response.ok) {
+                    throw new Error("Server Error: " + response.status);
                 }
 
-                // Update the chat
+                const data = await response.json();
+                const aiText = data.choices[0].message.content;
+
                 document.getElementById(loadingId).innerText = aiText;
-                speak(aiText); // Read it out loud
+                speak(aiText);
                 chat.scrollTop = chat.scrollHeight;
 
             } catch (error) {
-                document.getElementById(loadingId).innerText = "System Error: Check Internet Connection.";
-                console.error(error);
+                document.getElementById(loadingId).innerHTML = "CONNECTION ERROR.<br>Details: " + error.message;
             }
         }
     </script>
