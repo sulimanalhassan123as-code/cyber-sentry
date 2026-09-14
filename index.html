@@ -255,14 +255,21 @@
             const text = input.value;
             if(!text) return;
 
-            chat.innerHTML += `<div class="msg user">${text}</div>`;
+            const safeDiv = document.createElement('div'); safeDiv.className = 'msg user'; safeDiv.textContent = text; chat.appendChild(safeDiv);
             input.value = '';
             
             const loadingId = "load_" + Date.now();
             chat.innerHTML += `<div class="msg system" id="${loadingId}">Thinking...</div>`;
             chat.scrollTop = chat.scrollHeight;
 
-            const apiKey = "REDACTED"; 
+            // SECURITY FIX: API key removed from source code (it was publicly exposed on GitHub).
+            // Enter your key once — it is stored only in YOUR browser (localStorage), never in the repo.
+            let apiKey = localStorage.getItem('ds_api_key') || '';
+            if (!apiKey) {
+                apiKey = prompt('Enter your DeepSeek API key (saved locally in this browser only):') || '';
+                if (apiKey) localStorage.setItem('ds_api_key', apiKey.trim());
+            }
+            if (!apiKey) { document.getElementById(loadingId).innerHTML = '⚠️ API key required.'; return; }
             
             // We use a CORS Proxy to bypass the browser block
             const proxy = "https://corsproxy.io/?";
